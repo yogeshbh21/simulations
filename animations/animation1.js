@@ -3,7 +3,7 @@ function story1() {
   story1.canvasInit();
   const ctx = story1._ctx;
   const stars = [];
-
+  playAudio();
   _.map(_.times(1000), () => {
     stars.push(
       new Circle({
@@ -55,7 +55,7 @@ const resetPosition = ({ canvas, ref }) => {
     ref.posY = getRandomNumber(canvas.height / 2, canvas.height);
   }
 
-  if (Math.abs(ref.velX) > 20) {
+  if (Math.abs(ref.velX) > 50) {
     ref.acceleration = -ref.acceleration;
   }
 };
@@ -67,5 +67,24 @@ const timeLapse = ({ stars, ctx }) => {
     star.resetPos({ resetPosFn: resetPosition, canvas: ctx.canvas });
 
     star.draw({ ctx });
+  });
+};
+
+const playAudio = () => {
+  const audioPlayer = document.getElementById("audioPlayer");
+
+  audioPlayer.src = "animations/music/space-music.mp3";
+
+  audioPlayer.loop = true;
+
+  document.addEventListener("click", () => {
+    audioPlayer
+      .play()
+      .then(() => {
+        console.log("Audio playback started successfully");
+      })
+      .catch((error) => {
+        console.error("Error starting audio playback:", error.message);
+      });
   });
 };
