@@ -69,11 +69,3 @@ const timeLapse = ({ stars, ctx }) => {
     star.draw({ ctx });
   });
 };
-
-const curve = ({ stars, ctx }) => {
-  _.map(stars, (star) => {
-    star.posX += 2;
-    star.posY += 2;
-    star.draw({ ctx });
-  });
-};
