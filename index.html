@@ -3,31 +3,79 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
-
-    <script src="./stories.js"></script>
-    <script src="./index.js"></script>
-    <script src="./entity.js"></script>
-    <script src="./utils.js"></script>
-    <script src="./animations/animation1.js"></script>
-    <script src="./animations/animation2.js"></script>
-
-    <title>Canvas Example</title>
-    <style>
-      /* Add any additional styling here */
-      canvas {
-        border: 2px solid #ffff;
-        background-color: black;
-        width: 100vw;
-        height: 100vh;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-      }
-    </style>
+    <title>Image Compressor</title>
   </head>
   <body>
-    <canvas id="myCanvas"></canvas>
+    <input type="file" accept="image/*" id="imageInput" />
+    <img id="originalImage" style="max-width: 100%" />
+    <img id="compressedImage" style="max-width: 100%" />
+    <button id="downloadButton" style="display: none">
+      Download Compressed Image
+    </button>
+
+    <script>
+      document
+        .getElementById("imageInput")
+        .addEventListener("change", handleImage);
+
+      function handleImage(event) {
+        const input = event.target;
+        const originalImage = document.getElementById("originalImage");
+        const compressedImage = document.getElementById("compressedImage");
+        const downloadButton = document.getElementById("downloadButton");
+
+        const file = input.files[0];
+        if (file) {
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+            const img = new Image();
+            img.src = e.target.result;
+
+            img.onload = function () {
+              // Display the original image
+              originalImage.src = img.src;
+
+              // Compress the image
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+              const maxWidth = img.width - img.width / 3;
+              console.log(img.width);
+              let newWidth = img.width - img.width / 3;
+              let newHeight = img.height;
+
+              if (img.width > maxWidth) {
+                newWidth = maxWidth;
+                newHeight = (maxWidth * img.height) / img.width;
+              }
+
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+
+              ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+              // Display the compressed image
+              compressedImage.src = canvas.toDataURL("image/png"); // Use 'image/png' for PNG format
+
+              // Show the download button
+              downloadButton.style.display = "block";
+            };
+          };
+
+          reader.readAsDataURL(file);
+        }
+      }
+
+      document
+        .getElementById("downloadButton")
+        .addEventListener("click", function () {
+          const compressedImage = document.getElementById("compressedImage");
+          const downloadLink = document.createElement("a");
+
+          downloadLink.href = compressedImage.src;
+          downloadLink.download = "compressed_image.png"; // Change the file extension to '.png'
+          downloadLink.click();
+        });
+    </script>
   </body>
 </html>
