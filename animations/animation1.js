@@ -3,7 +3,6 @@ function story1() {
   story1.canvasInit();
   const ctx = story1._ctx;
   const stars = [];
-  playAudio();
   _.map(_.times(1000), () => {
     stars.push(
       new Circle({
@@ -15,7 +14,7 @@ function story1() {
         //   color: colorHexMap[_.keys(colorHexMap)[getRandomNumber(0, 20)]],
         velX: 2, // Math.random() * 3,
         velY: 1, // Math.random() * 3,
-        acceleration: 0.1, //Math.random() * 3,
+        acceleration: 0.001, //Math.random() * 3,
       })
     );
   });

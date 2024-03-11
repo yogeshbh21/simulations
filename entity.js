@@ -90,7 +90,7 @@ class Entity {
 
 class Circle extends Entity {
   constructor({
-    name = "",
+    name = "Circle",
     weight = 0,
     posX = 0,
     posY = 0,
@@ -126,6 +126,15 @@ class Circle extends Entity {
     this.posY = this.posY + this.velY;
   }
 
+  moveForwardOnXOnTime({ timePassedInMs }) {
+    //make this a common function
+    this.posX = this.posX + (this.velX * timePassedInMs) / 1000;
+  }
+
+  moveForwardOnYOnTime({ timePassedInMs }) {
+    this.posY = this.posY + (this.velY * timePassedInMs) / 1000;
+  }
+
   resetPos({ resetPosFn, ...params }) {
     resetPosFn({ ...params, ref: this });
   }
@@ -135,6 +144,12 @@ class Circle extends Entity {
     ctx.beginPath();
     ctx.arc(this.posX, this.posY, this.radius, 0, 2 * Math.PI);
     ctx.fill();
+  }
+
+  getNodePos() {
+    const posX = (this.posX - this.weight * 10) / (this.weight * 10 * 2);
+    const posY = (this.posY - this.weight * 10) / (this.weight * 10 * 2);
+    return { posX, posY };
   }
 }
 
@@ -161,5 +176,128 @@ class Story {
 
   clearCanvas() {
     this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+  }
+}
+
+class Graph {
+  constructor() {
+    this.nodes = new Map();
+  }
+
+  addNode(node) {
+    if (!this.nodes.has(node)) {
+      this.nodes.set(node, new Set());
+    } else {
+      console.error("Node already exists in the graph.");
+    }
+  }
+
+  addEdge(node1, node2) {
+    if (!this.nodes.has(node1) || !this.nodes.has(node2)) {
+      console.error("Both nodes must exist in the graph.");
+      return;
+    }
+
+    this.nodes.get(node1).add(node2);
+    this.nodes.get(node2).add(node1); // For an undirected graph
+  }
+
+  getNeighbors(node) {
+    return Array.from(this.nodes.get(node));
+  }
+
+  displayGraph() {
+    for (const [node, neighbors] of this.nodes) {
+      console.log(`${node} -> ${Array.from(neighbors).join(", ")}`);
+    }
+  }
+}
+
+class Matrix {
+  constructor() {
+    this.matrix = new Map();
+  }
+
+  addNode(row, col, node) {
+    if (!this.matrix.has(row)) {
+      this.matrix.set(row, new Map());
+    }
+
+    this.matrix.get(row).set(col, node);
+  }
+
+  getNode(row, col) {
+    return this.matrix.has(row) ? this.matrix.get(row).get(col) : undefined;
+  }
+
+  displayMatrix({ displayFn }) {
+    for (const [row, colNodeMap] of this.matrix) {
+      _.map(Array.from(colNodeMap.values()), (node, indexY) => {
+        displayFn({ row, col: indexY, ref: this, node });
+      });
+    }
+  }
+
+  getNodePos({ node, getFn }) {
+    return getFn({ node, ref: this });
+  }
+
+  getMatrixLength() {
+    const totalRows = this.matrix.size;
+    const totalCols =
+      totalRows > 0
+        ? Math.max(
+            ...Array.from(this.matrix.values()).map(
+              (colNodeMap) => colNodeMap.size
+            )
+          )
+        : 0;
+
+    return { totalRows, totalCols };
+  }
+  getAdjacentNodes(row, col) {
+    const adjacentNodes = [];
+
+    // Check the node to the right
+    if (this.matrix.has(row) && this.matrix.get(row).has(col + 1)) {
+      adjacentNodes.push(this.matrix.get(row).get(col + 1));
+    }
+
+    // Check the node bottom-right
+    if (this.matrix.has(row + 1) && this.matrix.get(row + 1).has(col + 1)) {
+      adjacentNodes.push(this.matrix.get(row + 1).get(col + 1));
+    }
+
+    // Check the node below
+    if (this.matrix.has(row + 1) && this.matrix.get(row + 1).has(col)) {
+      adjacentNodes.push(this.matrix.get(row + 1).get(col));
+    }
+
+    // Check the node bottom-left
+    if (this.matrix.has(row + 1) && this.matrix.get(row + 1).has(col - 1)) {
+      adjacentNodes.push(this.matrix.get(row + 1).get(col - 1));
+    }
+
+    // Check the node to the left
+    if (this.matrix.has(row) && this.matrix.get(row).has(col - 1)) {
+      adjacentNodes.push(this.matrix.get(row).get(col - 1));
+    }
+
+    // Check the node top-left
+    if (this.matrix.has(row - 1) && this.matrix.get(row - 1).has(col - 1)) {
+      adjacentNodes.push(this.matrix.get(row - 1).get(col - 1));
+    }
+
+    // Check the node above
+    if (this.matrix.has(row - 1) && this.matrix.get(row - 1).has(col)) {
+      adjacentNodes.push(this.matrix.get(row - 1).get(col));
+    }
+
+    // Check the node top-right
+    if (this.matrix.has(row - 1) && this.matrix.get(row - 1).has(col + 1)) {
+      adjacentNodes.push(this.matrix.get(row - 1).get(col + 1));
+    }
+
+    return adjacentNodes;
   }
 }

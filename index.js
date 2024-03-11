@@ -2,7 +2,7 @@ window.onload = function () {};
 
 document.addEventListener("DOMContentLoaded", function () {
   // Your code here, to be executed after the DOM is ready
-  const storyToRun = getStoryByType(STORY_TYPES.STORY_1);
+  const storyToRun = getStoryByType(STORY_TYPES.STORY_2);
   callFunctionByName(storyToRun);
 });
 
