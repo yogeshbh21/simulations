@@ -7,6 +7,19 @@
   </head>
   <body>
     <input type="file" accept="image/*" id="imageInput" />
+    <label for="desiredSize">Desired Size (max width):</label>
+    <input
+      type="number"
+      id="desiredSize"
+      placeholder="Enter max width percentage"
+    />
+    <label for="desiredHeight">Desired Height:</label>
+    <input
+      type="number"
+      id="desiredHeight"
+      placeholder="Enter max height percentage"
+    />
+    <p>Current Image Size: <span id="currentSize"></span></p>
     <img id="originalImage" style="max-width: 100%" />
     <img id="compressedImage" style="max-width: 100%" />
     <button id="downloadButton" style="display: none">
@@ -14,17 +27,20 @@
     </button>
 
     <script>
-      document
-        .getElementById("imageInput")
-        .addEventListener("change", handleImage);
+      const imageInput = document.getElementById("imageInput");
+      const originalImage = document.getElementById("originalImage");
+      const compressedImage = document.getElementById("compressedImage");
+      const downloadButton = document.getElementById("downloadButton");
+      const desiredSizeInput = document.getElementById("desiredSize");
+      const desiredHeightInput = document.getElementById("desiredHeight");
+      const currentSizeSpan = document.getElementById("currentSize");
 
-      function handleImage(event) {
-        const input = event.target;
-        const originalImage = document.getElementById("originalImage");
-        const compressedImage = document.getElementById("compressedImage");
-        const downloadButton = document.getElementById("downloadButton");
+      imageInput.addEventListener("change", handleImage);
+      desiredSizeInput.addEventListener("input", handleImage);
+      desiredHeightInput.addEventListener("input", handleImage);
 
-        const file = input.files[0];
+      function handleImage() {
+        const file = imageInput.files[0];
         if (file) {
           const reader = new FileReader();
 
@@ -33,31 +49,41 @@
             img.src = e.target.result;
 
             img.onload = function () {
-              // Display the original image
               originalImage.src = img.src;
+              currentSizeSpan.textContent = `${img.width} x ${img.height}`;
 
-              // Compress the image
-              const canvas = document.createElement("canvas");
-              const ctx = canvas.getContext("2d");
-              const maxWidth = img.width - img.width / 3;
-              console.log(img.width);
-              let newWidth = img.width - img.width / 3;
+              const desiredWidthPercentage =
+                parseFloat(desiredSizeInput.value) || 100;
+              const desiredHeightPercentage =
+                parseFloat(desiredHeightInput.value) || 100;
+
+              const desiredWidth = (desiredWidthPercentage / 100) * img.width;
+              const desiredHeight =
+                (desiredHeightPercentage / 100) * img.height;
+
+              let newWidth = img.width;
               let newHeight = img.height;
 
-              if (img.width > maxWidth) {
-                newWidth = maxWidth;
-                newHeight = (maxWidth * img.height) / img.width;
+              if (img.width > desiredWidth) {
+                newWidth = desiredWidth;
+                newHeight = (desiredWidth / img.width) * img.height;
               }
+
+              if (newHeight > desiredHeight) {
+                newHeight = desiredHeight;
+                newWidth = (desiredHeight / img.height) * img.width;
+              }
+
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
 
               canvas.width = newWidth;
               canvas.height = newHeight;
 
               ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
-              // Display the compressed image
-              compressedImage.src = canvas.toDataURL("image/png"); // Use 'image/png' for PNG format
+              compressedImage.src = canvas.toDataURL("image/png");
 
-              // Show the download button
               downloadButton.style.display = "block";
             };
           };
@@ -66,16 +92,12 @@
         }
       }
 
-      document
-        .getElementById("downloadButton")
-        .addEventListener("click", function () {
-          const compressedImage = document.getElementById("compressedImage");
-          const downloadLink = document.createElement("a");
-
-          downloadLink.href = compressedImage.src;
-          downloadLink.download = "compressed_image.png"; // Change the file extension to '.png'
-          downloadLink.click();
-        });
+      downloadButton.addEventListener("click", function () {
+        const downloadLink = document.createElement("a");
+        downloadLink.href = compressedImage.src;
+        downloadLink.download = "compressed_image.png";
+        downloadLink.click();
+      });
     </script>
   </body>
 </html>
